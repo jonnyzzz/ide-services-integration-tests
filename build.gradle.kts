@@ -24,6 +24,9 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers")
   testImplementation("org.testcontainers:junit-jupiter")
 
+  // Playwright
+  testImplementation("com.microsoft.playwright:playwright:1.40.0")
+
   // Kotlin test
   testImplementation(kotlin("test"))
 }
