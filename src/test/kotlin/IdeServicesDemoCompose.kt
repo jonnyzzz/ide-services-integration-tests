@@ -5,7 +5,9 @@ import org.testcontainers.containers.ComposeContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.time.Duration
 
-class IdeServicesDemoCompose
+class IdeServicesDemoCompose(
+  val enableTbeLogging: Boolean = false,
+)
   : ComposeContainer(IdeServicesPackage.ideServicesComposeFile.toFile()) {
   private val tbeContainerLog = LoggerFactory.getLogger("tbe-container-logs")
 
@@ -18,7 +20,7 @@ class IdeServicesDemoCompose
    *
    * See https://www.jetbrains.com/help/ide-services/try-demo.html#start_demo for more details
    */
-  val ideServiceUrl: String get() = resolveServiceUrl("https", tbeServer)
+  val ideServiceUrl: String get() = resolveServiceUrl("http", tbeServer)
 
   /**
    * The demo package comes with the mock-auth, a tiny OAuth2 compatible service,
@@ -34,14 +36,15 @@ class IdeServicesDemoCompose
     withLocalCompose(true)
     withExposedService(tbeServer)
     withExposedService(mockAuth)
-    withLogConsumer(tbeServer.serviceName) { tbeContainerLog.info("[TBE] " + it.utf8String) }
+    if (enableTbeLogging) {
+      withLogConsumer(tbeServer.serviceName) { tbeContainerLog.info("[TBE] " + it.utf8String) }
+    }
+
     waitingFor(
       tbeServer.serviceName,
       Wait
-        .forHttps("/actuator/health")
-        .allowInsecure()
+        .forHttp("/actuator/health")
         .forPort(tbeServer.servicePort)
-        .forStatusCode(200)
         .withStartupTimeout(
           Duration.ofMinutes(5)
         )
